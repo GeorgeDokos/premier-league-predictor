@@ -1,0 +1,24 @@
+Model: Results-Only Baseline v1
+Prediction date: 2026-08-20
+Simulations: 50,000
+
+Historical data:
+- Premier League 2023/24
+- Premier League 2024/25
+- Premier League 2025/26
+
+Method:
+- Exponential recency weighting
+- Half-life: 365 days
+- Separate home/away attack and defence ratings
+- Poisson goal generation
+- Promoted-team historical prior + Championship adjustment
+
+Not included:
+- Transfers
+- Individual player quality
+- Injuries
+- Managers
+- Preseason friendlies
+- xG
+- Betting odds
