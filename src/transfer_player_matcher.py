@@ -3,7 +3,7 @@ import unicodedata
 import re
 
 from player_data_loader import load_player_data
-from transfer_loader import get_premier_league_transfers
+from transfer_loader import load_saved_transfers
 from rapidfuzz import process, fuzz
 from broader_player_loader import load_broader_player_data
 
@@ -110,7 +110,7 @@ def find_fuzzy_match(name_key, player_names, threshold=88):
     return None
 
 def match_transfers_to_players():
-    transfers = get_premier_league_transfers().copy()
+    transfers = load_saved_transfers().copy()
 
     transfers["name_key"] = (
         transfers["Player"]
@@ -228,6 +228,9 @@ def match_transfers_to_players():
                     result["stats_xa"] = player_row.get("expected_assists")
                     result["stats_rating"] = player_row.get("rating")
                     result["stats_market_value"] = player_row.get("market_value")
+                    result["stats_tackles"] = player_row.get("tackles")
+                    result["stats_interceptions"] = player_row.get("interceptions")
+                    result["stats_saves"] = player_row.get("saves")
 
                 elif source == "original":
                     result["stats_name"] = player_row.get("Player")
@@ -242,6 +245,9 @@ def match_transfers_to_players():
                     result["stats_xa"] = None
                     result["stats_rating"] = None
                     result["stats_market_value"] = None
+                    result["stats_tackles"] = player_row.get("TklW")
+                    result["stats_interceptions"] = player_row.get("Int")
+                    result["stats_saves"] = player_row.get("Saves")
 
         enriched_rows.append(result)
 

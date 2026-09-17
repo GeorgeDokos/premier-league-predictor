@@ -1,5 +1,3 @@
-import random
-from collections import defaultdict
 import pandas as pd
 from pathlib import Path
 RESULTS_DIR = Path(__file__).resolve().parent.parent / "results"
@@ -12,6 +10,7 @@ from ratings import (
     calculate_league_averages,
     calculate_championship_ratings,
     convert_promoted_rating,
+    apply_transfer_adjustments,
 )
 from poisson import expected_goals
 
@@ -45,7 +44,6 @@ PROMOTED_TEAMS = {
     "Hull",
 }
 
-
 def build_2026_27_ratings():
     premier_matches = load_premier_league_data()
 
@@ -69,6 +67,11 @@ def build_2026_27_ratings():
         ratings[team] = convert_promoted_rating(
             championship_ratings[team]
         )
+
+    # Apply 2026 transfer/player adjustments
+    ratings = apply_transfer_adjustments(
+        ratings
+    )
 
     return ratings, premier_matches
 
@@ -244,12 +247,11 @@ def save_results(results, filename):
 
     print()
     print(f"Saved to: {output_path}")
-if __name__ == "__main__":
+def run_2026_27_prediction(simulations=50000, output_filename="model_2a_transfers_2026_27.csv"):
+    """Build ratings, simulate the 2026/27 season, and save the results."""
     ratings, matches = build_2026_27_ratings()
 
-    home_goal_avg, away_goal_avg = (
-        calculate_league_averages(matches)
-    )
+    home_goal_avg, away_goal_avg = calculate_league_averages(matches)
 
     print("Teams:", len(ratings))
     print("Running simulations...")
@@ -259,17 +261,14 @@ if __name__ == "__main__":
         ratings,
         home_goal_avg,
         away_goal_avg,
-        simulations=50000,
+        simulations=simulations,
     )
 
-    print("BASELINE 2026/27 PREDICTION")
-    print("Historical results only")
+    print("MODEL 2A - 2026/27 PREDICTION")
+    print("Historical results + transfer/player impact")
     print()
 
-    for position, result in enumerate(
-        results,
-        start=1,
-    ):
+    for position, result in enumerate(results, start=1):
         print(
             f"{position:2}. "
             f"{result['team']:18} "
@@ -279,7 +278,6 @@ if __name__ == "__main__":
             f"Top4 {result['top4_pct']:5.1f}% | "
             f"Rel {result['relegation_pct']:5.1f}%"
         )
-    save_results(
-    results,
-    "baseline_results_only_2026_27.csv",
-)
+
+    save_results(results, output_filename)
+    return results

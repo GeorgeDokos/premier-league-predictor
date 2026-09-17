@@ -1,5 +1,7 @@
 from data_loader import load_premier_league_data
-
+from transfer_impact import (
+    get_team_transfer_adjustments,
+)
 
 def weighted_average(values, weights):
     return (values * weights).sum() / weights.sum()
@@ -127,12 +129,66 @@ def convert_promoted_rating(rating):
         ),
     }
 
+def apply_transfer_adjustments(team_ratings):
+    adjustments = get_team_transfer_adjustments()
+
+    adjusted = {}
+
+    for team, rating in team_ratings.items():
+        attack_adj = adjustments.get(
+            team,
+            {}
+        ).get(
+            "attack_adjustment",
+            0.0,
+        )
+
+        defence_adj = adjustments.get(
+            team,
+            {}
+        ).get(
+            "defence_adjustment",
+            0.0,
+        )
+
+        adjusted[team] = {
+            "home_attack": (
+                rating["home_attack"]
+                * (1 + attack_adj)
+            ),
+            "away_attack": (
+                rating["away_attack"]
+                * (1 + attack_adj)
+            ),
+            "home_defence": (
+                rating["home_defence"]
+                * (1 - defence_adj)
+            ),
+            "away_defence": (
+                rating["away_defence"]
+                * (1 - defence_adj)
+            ),
+        }
+
+    return adjusted
+
 if __name__ == "__main__":
     matches = load_premier_league_data()
 
     ratings = calculate_team_ratings(matches)
 
-    for team in ["Arsenal", "Liverpool", "Man City"]:
+    print("BEFORE TRANSFER ADJUSTMENTS")
+    for team in ["Arsenal", "Liverpool", "Man City", "Chelsea"]:
+        print(team)
+        print(ratings[team])
+        print()
+
+    ratings = apply_transfer_adjustments(
+        ratings
+    )
+
+    print("AFTER TRANSFER ADJUSTMENTS")
+    for team in ["Arsenal", "Liverpool", "Man City", "Chelsea"]:
         print(team)
         print(ratings[team])
         print()
